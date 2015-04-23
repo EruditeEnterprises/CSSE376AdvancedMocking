@@ -54,9 +54,10 @@ namespace CommandClientVisualStudioTest
             }
             mocks.ReplayAll();
             CMDClient client = new CMDClient(null, "Bogus network name");
-            
-            // we need to set the private variable here
 
+            System.Type clientType = typeof(CMDClient);
+            FieldInfo streamField = clientType.GetField("networkStream", BindingFlags.NonPublic | BindingFlags.Instance);
+            streamField.SetValue(client, fakeStream);
             client.SendCommandToServerUnthreaded(command);
             mocks.VerifyAll();
             
