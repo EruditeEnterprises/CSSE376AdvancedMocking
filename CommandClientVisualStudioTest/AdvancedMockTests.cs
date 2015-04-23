@@ -66,7 +66,35 @@ namespace CommandClientVisualStudioTest
         [TestMethod]
         public void TestUserExitCommandWithoutMocks()
         {
-            Assert.Fail("Not yet implemented");
+            IPAddress ipaddress = IPAddress.Parse("127.0.0.1");
+            Command command = new Command(CommandType.UserExit, ipaddress, null);
+            System.IO.Stream memStream = new MemoryStream();
+            byte[] commandBytes = { 0, 0, 0, 0 };
+            byte[] ipLength = { 9, 0, 0, 0 };
+            byte[] ip = { 49, 50, 55, 46, 48, 46, 48, 46, 49 };
+            byte[] metaDataLength = { 2, 0, 0, 0 };
+            byte[] metaData = { 10, 0 };
+
+            using (mocks.Ordered())
+            {
+                memStream.Write(commandBytes, 0, 4);
+                memStream.Flush();
+                memStream.Write(ipLength, 0, 4);
+                memStream.Flush();
+                memStream.Write(ip, 0, 9);
+                memStream.Flush();
+                memStream.Write(metaDataLength, 0, 4);
+                memStream.Flush();
+                memStream.Write(metaData, 0, 2);
+                memStream.Flush();
+            }
+            CMDClient client = new CMDClient(null, "Bogus network name");
+
+            System.Type clientType = typeof(CMDClient);
+            FieldInfo streamField = clientType.GetField("networkStream", BindingFlags.NonPublic | BindingFlags.Instance);
+            streamField.SetValue(client, memStream);
+            client.SendCommandToServerUnthreaded(command);
+            
         }
 
         [TestMethod]
